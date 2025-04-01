@@ -1,0 +1,176 @@
+<div class="d-flex justify-content-center mt-5">
+    <div class="btn-group" role="group" aria-label="Basic example">
+      <button type="button" class="btn btn-primary" onclick="showSection('porId')">Por ID</button>
+      <button type="button" class="btn btn-primary" onclick="showSection('porRango')">Por Rango de Precio</button>
+      <button type="button" class="btn btn-primary" onclick="showSection('todo')">Todo</button>
+    </div>
+  </div>
+  
+  <!-- Contenedor para las secciones -->
+  <div class="mt-5">
+    <div id="porId" class="section" style="display: none;">
+      <%- include('busquedaId') %>
+    </div>
+  
+    <div id="porRango" class="section" style="display: none;">
+      <%- include('busquedaRango') %>
+    </div>
+  
+    <div id="todo" class="section" style="display: none;">
+      <%- include('busquedaTodo') %>
+    </div>
+  </div>
+  
+  <script>
+    // Función para mostrar la sección seleccionada
+    function showSection(sectionId) {
+      // Ocultar todas las secciones
+      const sections = document.querySelectorAll('.section');
+      sections.forEach(section => section.style.display = 'none');
+  
+      // Mostrar la sección seleccionada
+      const selectedSection = document.getElementById(sectionId);
+      if (selectedSection) {
+        selectedSection.style.display = 'block';
+      }
+    }
+  
+// Función para buscar por ID
+async function buscarPorId(event) {
+    event.preventDefault(); // Evitar recargar la página
+    const id = document.getElementById('id').value;
+
+    try {
+        // Realiza una solicitud al backend
+        const response = await fetch(`/ropa/buscarPorId/${id}`);
+        if (response.ok) {
+            const ropa = await response.json(); // Obtiene los datos en formato JSON
+
+            // Muestra los datos del servicio en el frontend
+            const resultado = `<div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">ropa ID: ${ropa.id}</h5>
+                    <p class="card-text"><strong>Nombre:</strong> ${ropa.nombre}</p>
+                    <p class="card-text"><strong>Tipo:</strong> ${ropa.tipo}</p>
+                     <p class="card-text"><strong>Talla:</strong> ${ropa.talla}</p>
+                    <p class="card-text"><strong>Precio:</strong> ${ropa.precio}</p>
+                </div>
+            </div>`;
+            document.getElementById('resultadoPorId').innerHTML = resultado;
+        } else {
+            // Maneja el caso en que no se encuentra el servicio
+            document.getElementById('resultadoPorId').innerHTML = `<div class="alert alert-danger mt-3">Ropa no encontrada</div>`;
+        }
+    } catch (error) {
+        console.error('Error al buscar la ropa:', error);
+        document.getElementById('resultadoPorId').innerHTML = `<div class="alert alert-danger mt-3">Error al buscar la ropa</div>`;
+    }
+}
+  
+// Función para buscar por rango de precios
+async function buscarPorRango(event) {
+    event.preventDefault(); // Evitar recargar la página
+    const precioMin = document.getElementById('precioMin').value;
+    const precioMax = document.getElementById('precioMax').value;
+
+    try {
+        // Realiza una solicitud al backend
+        const response = await fetch(`/ropa/buscarPorRango?precioMin=${precioMin}&precioMax=${precioMax}`);
+        if (response.ok) {
+            const ropa = await response.json(); // Obtiene los datos en formato JSON
+
+            // Genera la tabla con los resultados
+            let tabla = `
+                <table class="table table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Tipo</th>
+                            <th>Talla</th>
+                            <th>Precio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            ropa.forEach(ropa => {
+                tabla += `
+                    <tr>
+                        <td>${ropa.id}</td>
+                        <td>${ropa.nombre}</td>
+                        <td>${ropa.tipo}</td>
+                        <td>${ropa.talla}</td>
+                        <td>${ropa.precio}</td>
+                    </tr>
+                `;
+            });
+
+            tabla += `
+                    </tbody>
+                </table>
+            `;
+
+            // Muestra la tabla en el contenedor
+            document.getElementById('resultadoPorRango').innerHTML = tabla;
+        } else {
+            document.getElementById('resultadoPorRango').innerHTML = `<div class="alert alert-danger mt-3">No se encontraron ropas en el rango de precios especificado</div>`;
+        }
+    } catch (error) {
+        console.error('Error al buscar la ropas por rango de precios:', error);
+        document.getElementById('resultadoPorRango').innerHTML = `<div class="alert alert-danger mt-3">Error al buscar ropas</div>`;
+    }
+}
+  
+// Función para mostrar todos los servicios
+async function mostrarTodo() {
+    try {
+        // Realiza una solicitud al backend
+        const response = await fetch(`/ropa/todos`);
+        if (response.ok) {
+            const ropa = await response.json(); // Obtiene los datos en formato JSON
+            console.log(ropa);
+
+            // Genera la tabla con los resultados
+            let tabla = `
+                <table class="table table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Tipo</th>
+                            <th>Talla</th>
+                            <th>Precio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            ropa.forEach(ropa => {
+                tabla += `
+                    <tr>
+                        <td>${ropa.id}</td>
+                        <td>${ropa.nombre}</td>
+                        <td>${ropa.tipo}</td>
+                        <td>${ropa.talla}</td>
+                        <td>${ropa.precio}</td>
+                    </tr>
+                `;
+            });
+
+            tabla += `
+                    </tbody>
+                </table>
+            `;
+
+            // Muestra la tabla en el contenedor
+            document.getElementById('resultadoTodo').innerHTML = tabla;
+        } else {
+            document.getElementById('resultadoTodo').innerHTML = `<div class="alert alert-danger mt-3">No se encontraron ropas</div>`;
+        }
+    } catch (error) {
+        console.error('Error al obtener todas las ropas:', error);
+        document.getElementById('resultadoTodo').innerHTML = `<div class="alert alert-danger mt-3">Error al obtener la ropa</div>`;
+    }
+}
+  </script>
